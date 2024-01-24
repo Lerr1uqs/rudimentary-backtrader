@@ -85,7 +85,7 @@ data = bt.feeds.PandasData(
 
 cerebro.adddata(data, name="yiling")
 cerebro.addstrategy(DemoStrategy)
-# Sizer: 它根据资产总价值的百分比来确定每次交易的大小 这里是每次交易90
+# Sizer: 它根据资产总价值的百分比来确定每次交易的大小 这里是每次交易90%
 cerebro.addsizer(bt.sizers.PercentSizer, percents=90)
 
 cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="mysharp")
@@ -102,6 +102,7 @@ myreturn: bt.analyzers.Returns     = result[0].analyzers.myreturn
 # 夏普率的本质就是 收益率/波动率 波动率就是用标准差计算
 logger.info("夏普率: {}".format(mysharp.get_analysis()['sharperatio']))
 logger.info("总回报率: {:.2%}".format(myreturn.get_analysis()['rtot']))
+logger.info("账户余额: {}".format(cerebro.broker.getvalue()))
 
 import matplotlib.pyplot as plt
 # 设置DISPLAY变量进行X11本地绘图转发
