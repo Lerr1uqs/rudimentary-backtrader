@@ -59,7 +59,7 @@ class DemoStrategy(bt.Strategy):
         # pnlcomm (Profit and Loss including Commissions)
         if trade.isclosed:
             logger.info(
-                "Trade Profit : {:.2f}".format(trade.pnl)
+                "Trade Profit : {:.2f}".format(trade.pnl)# 相比于买入的时候是亏损还是赚钱
             )
 
 
@@ -92,6 +92,7 @@ cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="mysharp")
 cerebro.addanalyzer(bt.analyzers.Returns, _name="myreturn")
 
 # print(cerebro.broker.getvalue()) # NOTE: 默认10000.0$ 
+origin_cash = cerebro.broker.getvalue()
 
 result: List[bt.Strategy] = cerebro.run()
 # logger.debug(result[0].analyzers.myreturn)
@@ -100,9 +101,10 @@ mysharp : bt.analyzers.SharpeRatio = result[0].analyzers.mysharp
 myreturn: bt.analyzers.Returns     = result[0].analyzers.myreturn
 
 # 夏普率的本质就是 收益率/波动率 波动率就是用标准差计算
-logger.info("夏普率: {}".format(mysharp.get_analysis()['sharperatio']))
+logger.info("夏普率: {:.2f}".format(mysharp.get_analysis()['sharperatio']))
 logger.info("总回报率: {:.2%}".format(myreturn.get_analysis()['rtot']))
-logger.info("账户余额: {}".format(cerebro.broker.getvalue()))
+logger.info("账户原始余额: {}".format(origin_cash))
+logger.info("账户回测余额: {:.1f}".format(cerebro.broker.getvalue()))
 
 import matplotlib.pyplot as plt
 # 设置DISPLAY变量进行X11本地绘图转发
