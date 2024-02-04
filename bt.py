@@ -4,6 +4,7 @@ import pdb
 import datetime
 from loguru import logger
 from typing import List, Type
+import quantstats as qs
 
 # PARAMS = dict(period5=5, period30=30)# TODO: 回测参数
 
@@ -90,15 +91,16 @@ cerebro.addsizer(bt.sizers.PercentSizer, percents=90)
 
 cerebro.addanalyzer(bt.analyzers.SharpeRatio, _name="mysharp")
 cerebro.addanalyzer(bt.analyzers.Returns, _name="myreturn")
+cerebro.addanalyzer(bt.analyzers.PyFolio, _name="myfolio")
 
 # print(cerebro.broker.getvalue()) # NOTE: 默认10000.0$ 
 origin_cash = cerebro.broker.getvalue()
 
-result: List[bt.Strategy] = cerebro.run()
+results: List[bt.Strategy] = cerebro.run()
 # logger.debug(result[0].analyzers.myreturn)
 
-mysharp : bt.analyzers.SharpeRatio = result[0].analyzers.mysharp
-myreturn: bt.analyzers.Returns     = result[0].analyzers.myreturn
+mysharp : bt.analyzers.SharpeRatio = results[0].analyzers.mysharp
+myreturn: bt.analyzers.Returns     = results[0].analyzers.myreturn
 
 # 夏普率的本质就是 收益率/波动率 波动率就是用标准差计算
 logger.info("夏普率: {:.2f}".format(mysharp.get_analysis()['sharperatio']))
@@ -111,3 +113,31 @@ import matplotlib.pyplot as plt
 cerebro.plot(style='candle', barup='green', bardown='red', iplot=False, volume=False, fmt_x_data='%Y-%m-%d %H:%M:%S')
 plt.savefig('backtrader_plot.png')
 
+pyfoliozer = results[0].analyzers.getbyname("myfolio")
+returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
+import pdb; pdb.set_trace()
+qs.reports.html(returns, output="report.html") 
+
+from http.server import SimpleHTTPRequestHandler
+from socketserver import TCPServer
+
+# 定义端口号
+port = 8000
+
+# 创建HTTP服务器，并指定启动页为report.html
+handler = SimpleHTTPRequestHandler
+handler.extensions_map.update({
+    '.html': 'text/html',
+    '.js': 'application/javascript',
+})
+
+# 启动HTTP服务器
+httpd = TCPServer(('localhost', port), handler)
+print(f"Server started at http://localhost:{port}/report.html")
+print("Press Ctrl+C to stop the server.")
+
+try:
+    httpd.serve_forever()
+except KeyboardInterrupt:
+    print("\nServer stopped.")
+    httpd.server_close()
