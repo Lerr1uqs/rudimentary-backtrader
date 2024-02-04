@@ -115,7 +115,8 @@ plt.savefig('backtrader_plot.png')
 
 pyfoliozer = results[0].analyzers.getbyname("myfolio")
 returns, positions, transactions, gross_lev = pyfoliozer.get_pf_items()
-import pdb; pdb.set_trace()
+# import pdb; pdb.set_trace()
+# 这里的returns应该是相对于前一天的变化率 只有0.0x
 qs.reports.html(returns, output="report.html") 
 
 from http.server import SimpleHTTPRequestHandler
